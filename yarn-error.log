@@ -1,0 +1,43 @@
+Arguments: 
+  /usr/local/bin/node /usr/local/Cellar/yarn/1.22.4/libexec/bin/yarn.js add node-iframe
+
+PATH: 
+  /usr/local/sbin:/Library/Frameworks/Python.framework/Versions/3.8/bin:/Library/Frameworks/Python.framework/Versions/3.8/bin:/Users/sencersoylu/.cargo/bin:/usr/local/opt/node@8/bin:/Users/sencersoylu/.npm-global/bin:/usr/local/bin:/Library/Frameworks/Python.framework/Versions/3.6/bin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Library/Frameworks/Python.framework/Versions/3.6/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Xamarin Workbooks.app/Contents/SharedSupport/path-bin:/usr/local/sbin:/Library/Frameworks/Python.framework/Versions/3.8/bin:/Users/sencersoylu/.cargo/bin:/usr/local/opt/node@8/bin:/Users/sencersoylu/.npm-global/bin:/Library/Frameworks/Python.framework/Versions/3.6/bin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Users/sencersoylu/Library/Android/sdk/tools:/Users/sencersoylu/Library/Android/sdk/platform-tools:/Users/sencersoylu/.android/avd:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:/Users/sencersoylu/Library/Android/sdk/tools:/Users/sencersoylu/Library/Android/sdk/platform-tools:/Users/sencersoylu/.android/avd:/Applications/Visual Studio Code.app/Contents/Resources/app/bin
+
+Yarn version: 
+  1.22.4
+
+Node version: 
+  12.18.2
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: EACCES: permission denied, mkdir '/Users/sencersoylu/Upwork/upworkProfile/node_modules/htmlparser2/node_modules/dom-serializer'
+
+npm manifest: 
+  {
+    "name": "upworkProfile",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "express": "^4.17.1",
+      "helmet": "^4.1.0",
+      "node-iframe": "^1.1.11",
+      "node-iframe-replacement": "^1.0.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
