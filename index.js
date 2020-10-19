@@ -198,7 +198,6 @@ const getProductAxios = async (item) => {
       .then(
         async (response) => {
           if (response.status === 200) {
-            console.log(html)
             const html = response.data;
             const $ = await cheerio.load(html);
 
@@ -256,7 +255,7 @@ const getProductAxios = async (item) => {
 
             let shippingPrice = $('[data-estimated-shipping] p').first()
             .text()
-            .trim();
+              .trim();
 
             const tags = new Set(tags_1.concat(tags_2));
 
@@ -267,7 +266,6 @@ const getProductAxios = async (item) => {
               title: itemTitle,
               tags: [...tags],
               price: price,
-              shippingPrice:shippingPrice,
               itemFavorite: itemFavorite,
               itemDescription: itemDescription,
               review:review,
@@ -333,6 +331,6 @@ const getQueryItemsByPageAxios = async (query, pageID) => {
   });
 };
 
-var listener = app.listen(400, function () {
+var listener = app.listen(4000, function () {
   console.log("Your app is listening on port " + listener.address().port);
 });
