@@ -1,5 +1,5 @@
 {
-  "name": "upworkProfile",
+  "name": "etsyrunproject",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,13 +12,14 @@
   "license": "ISC",
   "dependencies": {
     "async": "^3.2.0",
+    "axios": "^0.20.0",
     "cheerio": "^1.0.0-rc.3",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "helmet": "^4.1.0",
     "http-proxy-middleware": "^1.0.5",
     "json2csv": "^5.0.1",
-    "puppeteer": "^5.2.1",
-    "request": "^2.88.2"
+    "moment": "^2.29.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
