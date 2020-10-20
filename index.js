@@ -98,18 +98,19 @@ app.get("/shop/:shop/:page", async (req, res) => {
       shopPageCount,
       1,
       async function (n, x) {
+        console.log(n)
         const items = await getItemsByPageAxios(shopName, n + 1);
-        return items;
+        x(null,items)
       },
       async function (err, items) {
+
         let arr = await items.flat();
 
 
         let products = await async.mapLimit(arr, 10, async (item, callback) => {
           let title = await getProductAxios(item);
-          return title;
+          callback(null, title);
         });
-
 
         res.json(products);
 
@@ -121,8 +122,6 @@ app.get("/shop/:shop/:page", async (req, res) => {
   finally{
 
     console.log(`Finished Searching Shop`);
-
-
 
   }
 });
@@ -277,6 +276,8 @@ const getProductAxios = async (item) => {
               image:image
               
             };
+
+            console.log(product);
 
             resolve(product);
           }
