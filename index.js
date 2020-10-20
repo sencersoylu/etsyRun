@@ -6,6 +6,9 @@ const axios = require("axios");
 const { parse } = require("json2csv");
 const cors = require('cors');
 const moment = require('moment'); // require
+const https = require('https');
+var fs = require('fs');
+
 
 
 // docker push soylu/etsyrun
@@ -331,6 +334,10 @@ const getQueryItemsByPageAxios = async (query, pageID) => {
   });
 };
 
-var listener = app.listen(4000, function () {
-  console.log("Your app is listening on port " + listener.address().port);
-});
+https.createServer({
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.cert')
+}, app)
+.listen(4000, function () {
+  console.log('Example app listening on port 4000! Go to https://localhost:4000/')
+})
