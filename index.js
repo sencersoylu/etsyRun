@@ -268,6 +268,7 @@ const getProductAxios = async (item) => {
               title: itemTitle,
               tags: [...tags],
               price: price,
+              shippingPrice:shippingPrice,
               itemFavorite: itemFavorite,
               itemDescription: itemDescription,
               review:review,
