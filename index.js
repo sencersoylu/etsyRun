@@ -9,6 +9,7 @@ const moment = require('moment'); // require
 const https = require('https');
 const fs = require('fs');
 const http = require('http');
+var bodyParser = require('body-parser');
 
 
 // docker push soylu/etsyrun
@@ -18,14 +19,15 @@ app.use(cors({
   origin: '*'
 }));
 
+app.use( bodyParser.json() ); 
+
+
 app.get("/query/:query/:page", async (req, res) => {
   try {
     const query = req.params.query;
     console.log(`${query} Start Searching Query`);
 
     let getPageCount = await getQueryPageCountAxios(query);
-
-    console.log(getPageCount);
 
     const shopPageCount = getPageCount > 5 ? 5 : getPageCount;
 
@@ -81,22 +83,18 @@ app.get("/query/:query/:page", async (req, res) => {
   }
 });
 
-app.get("/shop/:shop/:page", async (req, res) => {
+app.get("/shop/:shop", async (req, res) => {
   try {
     const shopName = req.params.shop;
 
     console.log(`${shopName} Start Searching Shop`);
 
 
-    let getPageCount = await getShopPageCountAxios(shopName);
-
-    console.log(getPageCount);
-
-    const shopPageCount = getPageCount > 5 ? 5 : getPageCount;
+    let pageCount = await getShopPageCountAxios(shopName);
 
     async.timesLimit(
-      shopPageCount,
-      1,
+      pageCount,
+      2,
       async function (n, x) {
         console.log(n)
         const items = await getItemsByPageAxios(shopName, n + 1);
@@ -106,13 +104,22 @@ app.get("/shop/:shop/:page", async (req, res) => {
 
         let arr = await items.flat();
 
+        const lastItems = arr.slice(0, 10);
 
-        let products = await async.mapLimit(arr, 10, async (item, callback) => {
+        let products = await async.mapLimit(lastItems, 5, async (item, callback) => {
           let title = await getProductAxios(item);
           callback(null, title);
         });
 
-        res.json(products);
+
+        const resData = {
+          shopName : shopName,
+          shopPage : pageCount,
+          shopItems : arr,
+          products : products
+        } 
+
+        res.json(resData);
 
       }
     );
@@ -135,6 +142,31 @@ app.get("/product/:id", async (req, response) => {
     //await browser.close();
     //response.set("Content-Type", "image/png");
     response.json(product);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post("/products", async (req, res) => {
+  try {
+    const productIds = req.body.products;
+
+    let products = await async.mapLimit(productIds, 5, async (item, callback) => {
+      let title = await getProductAxios(item);
+      callback(null,title);
+    },(err,items) => {
+      if(!err) {
+        res.json(items);
+      }
+      else {
+        res.json(err);
+      }
+  
+    });
+
+
+
+
   } catch (error) {
     console.log(error);
   }
@@ -351,9 +383,9 @@ const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
 httpServer.listen(4001, () => {
-	console.log('HTTP Server running on port 80');
+	console.log('HTTP Server running on port 4001');
 });
 
 httpsServer.listen(4000, () => {
-	console.log('HTTPS Server running on port 443');
+	console.log('HTTPS Server running on port 4000');
 });
