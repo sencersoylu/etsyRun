@@ -49,33 +49,6 @@ app.get("/query/:query/:page", async (req, res) => {
 
         res.json(products);
 
-        // var fields = [
-        //   "title",
-        //   "tags",
-        //   "price",
-        //   "itemFavorite",
-        //   "itemDescription",
-        //   "link",
-        // ];
-
-        // const opts = {
-        //   fields,
-        // };
-
-        // try {
-        //   const csv = parse(products, opts);
-        //   console.log(query , " Finished");
-        //   res.attachment("data.csv");
-        //   res.end(csv);
-        // } catch (err) {
-        //   console.error(err);
-        //   res.statusCode = 500;
-
-        //   return res.end(err.message);
-        // }
-
-        //await browser.close();
-        //response.set("Content-Type", "image/png");
       }
     );
   } catch (error) {
@@ -136,7 +109,7 @@ app.get("/shop/:shop", async (req, res) => {
 app.get("/product/:id", async (req, response) => {
   try {
 
-    let product = await getProductAxios(req.params.id, browser);
+    let product = await getProductAxios(req.params.id);
 
     console.log(product);
     //await browser.close();
@@ -233,7 +206,7 @@ const getProductAxios = async (item) => {
         async (response) => {
           if (response.status === 200) {
             const html = response.data;
-            const $ = await cheerio.load(html);
+            const $ = await cheerio.load(html , {xmlMode: true});
 
             let itemDescription = $(
               "#wt-content-toggle-product-details-read-more > p"
@@ -262,8 +235,16 @@ const getProductAxios = async (item) => {
               .text()
               .trim();
 
+             
+            let items = $('script');
+            const itemObj = items.toArray().filter(x=> x.attribs.type == "application/ld+json").map(x=>{
+              return JSON.parse(x.children[0].data.trim())
+            })
+
+            const category = itemObj[0].category.split("<").map(s => s.trim());
+
            
-            let image = $("img.carousel-image").first().attr('src');
+            let image = $("img.carousel-image").first().attr('src').replace("794xN","85x85");
 
             let itemFavorite = $(
               "#content > div.content-wrap.listing-page-content > div.wt-body-max-width.wt-mb-xs-6.wt-pl-md-4.wt-pr-md-4.wt-pl-lg-5.wt-pr-lg-5 > div.wt-display-flex-xs.wt-justify-content-space-between.wt-align-items-baseline.wt-flex-direction-row-xs.wt-mb-md-4 > div.wt-display-flex-xs.wt-align-items-baseline.wt-flex-direction-row-xs > div:nth-child(2) > a"
@@ -271,9 +252,9 @@ const getProductAxios = async (item) => {
               .text()
               .trim();
 
-            const tags_1 = $("#wt-content-toggle-tags-read-more li a")
+            const tags_1 = $("#wt-content-toggle-tags-read-more li a[href*='seller'],#wt-content-toggle-tags-read-more li a")
               .toArray()
-              .map((element) => $(element).text().trim());
+              .map((element) => $(element).text().trim()).filter(x => !category.includes(x))
 
             const tags_2 = $(
               "#content > div.content-wrap.listing-page-content > div.wt-body-max-width.wt-mb-xs-6.wt-pl-md-4.wt-pr-md-4.wt-pl-lg-5.wt-pr-lg-5 > div> div > div.tags-section-container.tag-cards-section-container-with-images > ul > li > a"
@@ -291,7 +272,7 @@ const getProductAxios = async (item) => {
             .text()
               .trim();
 
-            const tags = new Set(tags_1.concat(tags_2));
+            const tags = new Set(tags_1);
 
             const url = response.config.url;
 
@@ -306,11 +287,11 @@ const getProductAxios = async (item) => {
               review:review,
               listedDate:listedDate,
               link: url,
+              categories: category,
               image:image
               
             };
 
-            console.log(product);
 
             resolve(product);
           }
