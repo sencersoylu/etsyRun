@@ -273,7 +273,7 @@ const getProductAxios = async (item) => {
             .text()
               .trim();
 
-            const tags = new Set(tags_1);
+            const tags = new Set(tags_1.concat(tags_2));
 
             const url = response.config.url;
 
