@@ -205,7 +205,7 @@ const getProductAxios = async (item) => {
       .then(
         async (response) => {
           if (response.status === 200) {
-            const html = response.data;
+            const html = response.data.replace(/&quot;/gm,"'");
             const $ = await cheerio.load(html , {xmlMode: true});
 
             let itemDescription = $(
@@ -237,6 +237,7 @@ const getProductAxios = async (item) => {
 
              
             let items = $('script');
+            
             const itemObj = items.toArray().filter(x=> x.attribs.type == "application/ld+json").map(x=>{
               return JSON.parse(x.children[0].data.trim())
             })
