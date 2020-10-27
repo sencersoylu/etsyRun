@@ -261,7 +261,7 @@ const getProductAxios = async (item) => {
               "#content > div.content-wrap.listing-page-content > div.wt-body-max-width.wt-mb-xs-6.wt-pl-md-4.wt-pr-md-4.wt-pl-lg-5.wt-pr-lg-5 > div> div > div.tags-section-container.tag-cards-section-container-with-images > ul > li > a"
             )
               .toArray()
-              .map((element) => $(element).text().trim());
+              .map((element) => $(element).text().trim()).filter(x => !category.includes(x));
 
             let price = $("[data-buy-box-region='price'] p:first-child")
               .text()
@@ -273,7 +273,7 @@ const getProductAxios = async (item) => {
             .text()
               .trim();
 
-            const tags = new Set(tags_1.concat(tags_2));
+            const tags = new Set(tags_2.concat(tags_1));
 
             const url = response.config.url;
 
