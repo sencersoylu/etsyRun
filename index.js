@@ -25,32 +25,28 @@ app.use( bodyParser.json() );
 app.get("/query/:query/:page", async (req, res) => {
   try {
     const query = req.params.query;
+    const page = req.params.page;
     console.log(`${query} Start Searching Query`);
 
-    let getPageCount = await getQueryPageCountAxios(query);
-
-    const shopPageCount = getPageCount > 5 ? 5 : getPageCount;
-
-    async.timesLimit(
-      shopPageCount,
-      1,
-      async function (n, x) {
-        const items = await getQueryItemsByPageAxios(query, n + 1);
-        return items;
-      },
-      async function (err, items) {
-        let arr = await items.flat();
-
-        let products = await async.mapLimit(arr, 5, async (item, callback) => {
-          let title = await getProductAxios(item);
-          return title;
-        });
+    const items = await getQueryItemsByPageAxios(query,page);
+    if(items.length > 0) {
 
 
-        res.json(products);
+    const itemTemp = new Set(items);
 
-      }
-    );
+    const list = await getListingApi([...itemTemp].join('%2c'));
+
+    res.json(list);
+
+    } else {
+
+      res.status(404).json({
+        query,page,error :"Items Not Found."
+      })
+    }
+
+
+
   } catch (error) {
     console.log(error);
   }
@@ -324,7 +320,24 @@ const getQueryItemsByPageAxios = async (query, pageID) => {
 const getShopsProductsApi = async (shop, limit,offset) => {
   return new Promise(async (resolve, reject) => {
     axios
-      .get(`https://openapi.etsy.com/v2/shops/${shop}/listings/active?limit=${limit}&offset=${offset}&includes=Images&api_key=nzhq948351d7qj8ywy1oqrsj`, {
+      .get(`https://openapi.etsy.com/v2/shops/${shop}/listings/active?limit=${limit}&offset=${offset}&includes=Images,ShippingInfo,Section&api_key=nzhq948351d7qj8ywy1oqrsj`, {
+        withCredentials: true,
+      })
+      .then(
+        async (response) => {
+          if (response.status === 200) {
+            resolve(response.data);
+          }
+        },
+        (error) => reject(error)
+      ); // Read url query parameter.
+  });
+};
+
+const getListingApi = async (listing) => {
+  return new Promise(async (resolve, reject) => {
+    axios
+      .get(`https://openapi.etsy.com/v2/listings/${listing}?includes=Images,ShippingInfo,Section,Shop&api_key=nzhq948351d7qj8ywy1oqrsj`, {
         withCredentials: true,
       })
       .then(
