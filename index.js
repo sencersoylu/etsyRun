@@ -56,46 +56,14 @@ app.get("/query/:query/:page", async (req, res) => {
   }
 });
 
-app.get("/shop/:shop", async (req, res) => {
+app.get("/shop/:shop/:offset/:limit", async (req, res) => {
   try {
     const shopName = req.params.shop;
 
-    console.log(`${shopName} Start Searching Shop`);
+    let items = await getShopsProductsApi(shopName,req.params.limit,req.params.offset);
 
+    res.json(items);
 
-    let pageCount = await getShopPageCountAxios(shopName);
-
-    async.timesLimit(
-      pageCount,
-      2,
-      async function (n, x) {
-        console.log(n)
-        const items = await getItemsByPageAxios(shopName, n + 1);
-        x(null,items)
-      },
-      async function (err, items) {
-
-        let arr = await items.flat();
-
-        const lastItems = arr.slice(0, 10);
-
-        let products = await async.mapLimit(lastItems, 5, async (item, callback) => {
-          let title = await getProductAxios(item);
-          callback(null, title);
-        });
-
-
-        const resData = {
-          shopName : shopName,
-          shopPage : pageCount,
-          shopItems : arr,
-          products : products
-        } 
-
-        res.json(resData);
-
-      }
-    );
   } catch (error) {
     console.log(error);
   }
@@ -171,6 +139,8 @@ const getShopPageCountAxios = async (shopName) => {
       ); // Read url query parameter.
   });
 };
+
+
 
 const getQueryPageCountAxios = async (query) => {
   return new Promise(async (resolve, reject) => {
@@ -346,6 +316,24 @@ const getQueryItemsByPageAxios = async (query, pageID) => {
           }
         },
         (error) => console.log(err)
+      ); // Read url query parameter.
+  });
+};
+
+
+const getShopsProductsApi = async (shop, limit,offset) => {
+  return new Promise(async (resolve, reject) => {
+    axios
+      .get(`https://openapi.etsy.com/v2/shops/${shop}/listings/active?limit=${limit}&offset=${offset}&includes=Images&api_key=nzhq948351d7qj8ywy1oqrsj`, {
+        withCredentials: true,
+      })
+      .then(
+        async (response) => {
+          if (response.status === 200) {
+            resolve(response.data);
+          }
+        },
+        (error) => reject(error)
       ); // Read url query parameter.
   });
 };
