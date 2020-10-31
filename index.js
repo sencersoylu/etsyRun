@@ -11,6 +11,7 @@ const fs = require('fs');
 const http = require('http');
 var bodyParser = require('body-parser');
 
+var puppeteer = require('puppeteer');
 
 // docker push soylu/etsyrun
 // docker build -t soylu/etsyrun .
@@ -28,9 +29,8 @@ app.get("/query/:query/:page", async (req, res) => {
     const page = req.params.page;
     console.log(`${query} Start Searching Query`);
 
-    const items = await getQueryItemsByPageAxios(query,page);
+    const items = await getQueryItemsByPageAxios(query,page,req.query);
     if(items.length > 0) {
-
 
     const itemTemp = new Set(items);
 
@@ -292,27 +292,63 @@ const getItemsByPageAxios = async (shopName, pageID) => {
   });
 };
 
-const getQueryItemsByPageAxios = async (query, pageID) => {
+const getQueryItemsByPageAxios = async (query, pageID, reqQuery) => {
   return new Promise(async (resolve, reject) => {
-    axios
-      .get(`https://www.etsy.com/search?q=${query}&ref=pagination&page=${pageID}`, {
-        withCredentials: true,
-      })
-      .then(
-        async (response) => {
-          if (response.status === 200) {
-            const html = response.data;
+
+    
+    try {
+      const browser = await puppeteer.launch({
+        headless: true,
+        defaultViewport: null,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+
+      let page = await browser.newPage();
+      await page.setRequestInterception(true);
+      
+    page.on('request', (request) => {
+      if (request.resourceType() == 'image' || request.resourceType() == 'font') request.abort();
+      else request.continue();
+    });
+
+            await page.goto(`https://www.etsy.com/search?q=${query}&ref=pagination&page=${pageID}`,{waitUntil: "networkidle2",});
+    
+            const html = await page.content();// Read url query parameter.
+
+
             let $ = await cheerio.load(html);
 
-            let items = $(".listing-link")
+            await browser.close();
+
+            if(reqQuery.filter == "Bestseller"){
+
+              let items = $(".listing-link:contains('Bestseller')")
               .toArray()
               .map((element) => $(element).attr("data-listing-id"));
 
-            resolve(items);
+              resolve(items);
+
+            } else {
+
+              let items = $(".listing-link")
+              .toArray()
+              .map((element) => $(element).attr("data-listing-id"));
+
+              console.log($(".listing-link").length)
+
+              resolve(items);
+              
+            }
+
+
+           
+          } catch (error) {
+
+            console.log(error);
+
           }
-        },
-        (error) => console.log(err)
-      ); // Read url query parameter.
+        
+        
   });
 };
 
