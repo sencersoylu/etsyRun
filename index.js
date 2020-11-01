@@ -295,51 +295,18 @@ const getItemsByPageAxios = async (shopName, pageID) => {
 const getQueryItemsByPageAxios = async (query, pageID, reqQuery) => {
   return new Promise(async (resolve, reject) => {
 
-    
     try {
-      const browser = await puppeteer.launch({
-        headless: true,
-        defaultViewport: null,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      });
+    axios
+    .get(`https://p7vlfxaizf.execute-api.us-east-1.amazonaws.com/dev/getQuery/${query}/${pageID}`, {
+      withCredentials: true,
+    }) .then(
+        async (response) => {
 
-      let page = await browser.newPage();
-      await page.setRequestInterception(true);
-      
-    page.on('request', (request) => {
-      if (request.resourceType() == 'image' || request.resourceType() == 'font') request.abort();
-      else request.continue();
-    });
-
-            await page.goto(`https://www.etsy.com/search?q=${query}&ref=pagination&page=${pageID}`,{waitUntil: "networkidle2",});
-    
-            const html = await page.content();// Read url query parameter.
-
-
-            let $ = await cheerio.load(html);
-
-            await browser.close();
-
-            if(reqQuery.filter == "Bestseller"){
-
-              let items = $(".listing-link:contains('Bestseller')")
-              .toArray()
-              .map((element) => $(element).attr("data-listing-id"));
-
-              resolve(items);
-
-            } else {
-
-              let items = $(".listing-link")
-              .toArray()
-              .map((element) => $(element).attr("data-listing-id"));
-
-              console.log($(".listing-link").length)
-
-              resolve(items);
-              
-            }
-
+          if (response.status === 200) {
+            const items = response.data.items;
+            resolve(items);
+          }
+        })
 
            
           } catch (error) {
