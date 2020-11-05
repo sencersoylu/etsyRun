@@ -380,9 +380,10 @@ const getShopInfo = async (shopName) => {
 const getQueryItemsByPageAxios = async (query, pageID, reqQuery) => {
   return new Promise(async (resolve, reject) => {
 
+
     try {
     axios
-    .get(`https://p7vlfxaizf.execute-api.us-east-1.amazonaws.com/dev/getQuery/${query}/${pageID}`, {
+    .get(`https://p7vlfxaizf.execute-api.us-east-1.amazonaws.com/dev/getQuery/${query}/${pageID}?filter=${reqQuery.filter}`, {
       withCredentials: true,
     }) .then(
         async (response) => {
