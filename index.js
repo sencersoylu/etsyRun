@@ -52,6 +52,25 @@ app.get("/query/:query/:page", async (req, res) => {
   }
 });
 
+
+app.get("/shop/:shopName", async (req, res) => {
+  try {
+    const shopName = req.params.shopName;
+    console.log(`${shopName} getting shop Information`);
+
+    const shopInfo = await getShopInfo(shopName);
+
+
+    res.json(shopInfo);
+
+
+
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+
 app.get("/shop/:shop/:offset/:limit", async (req, res) => {
   try {
     const shopName = req.params.shop;
@@ -285,6 +304,72 @@ const getItemsByPageAxios = async (shopName, pageID) => {
               .map((element) => $(element).attr("data-listing-id"));
 
             resolve(items);
+          }
+        },
+        (error) => console.log(err)
+      ); // Read url query parameter.
+  });
+};
+
+
+const getShopInfo = async (shopName) => {
+  return new Promise(async (resolve, reject) => {
+    axios
+      .get(`https://www.etsy.com/shop/${shopName}`, {
+        withCredentials: true,
+      })
+      .then(
+        async (response) => {
+          if (response.status === 200) {
+            const html = response.data.replace(/&quot;/gm,"'");
+            const $ = await cheerio.load(html , {xmlMode: true});
+
+            let items = $('script');
+            
+            const itemObj = items.toArray().filter(x=> x.attribs.type == "application/ld+json").map(x=>{
+              return JSON.parse(x.children[0].data.trim())
+            })
+
+            const shop = itemObj[0];
+
+
+            let shopName = $(
+              ".shop-name-and-title-container h1"
+            )
+              .text()
+              .trim();
+
+              let shopDescription = $(
+                ".shop-name-and-title-container span"
+              )
+                .text()
+                .trim();
+
+              let shopSales =$('.shop-icon span:contains("Sales")').text()
+              .trim();
+
+              let etsySince = $(
+                "span.etsy-since"
+              )
+                .text()
+                .trim();
+
+            let shopScore = $('.shop-icon [name="rating"]').val();
+
+            let shopLocation = $('.shop-icon .shop-location').text()
+            .trim();
+
+            let shopImage =$('.shop-icon-external').attr('src');
+
+            let res = {
+              shopName,shopDescription,etsySince,
+              shopSales,shopLocation,shopImage,
+              shopRating : shop.aggregateRating.ratingValue,
+              shopReview:shop.aggregateRating.reviewCount
+
+            }
+
+            resolve(res);
           }
         },
         (error) => console.log(err)
